@@ -218,7 +218,7 @@ const EXAMS = [{"n":1,"tf":[216,186,436,430,8,110,317,390,555,182],"fill":[221,4
 const BYID={}; DATA.forEach(d=>BYID[d.id]=d);
 const TYPE_LABEL={tf:'Doğru/Yanlış',fill:'Boşluk',mc:'Çoktan Seçmeli',short:'Kısa Cevap'};
 const PAGE_SIZE=20;
-const state={chapters:new Set(),type:'all',star:false,warn:false,tagMode:'all',q:'',page:1};
+const state={chapters:new Set(),types:new Set(),star:false,warn:false,tagMode:'all',q:'',page:1};
 const chTitles={};DATA.forEach(d=>chTitles[d.ch]=d.ct);
 
 /* theme */
@@ -255,8 +255,13 @@ chWrap.addEventListener('click',e=>{const t=e.target.closest('.chip');if(!t)retu
   state.page=1;render();syncCh();});
 function syncCh(){chAll.classList.toggle('on',state.chapters.size===0);
   chWrap.querySelectorAll('[data-ch]').forEach(s=>s.classList.toggle('on',state.chapters.has(+s.dataset.ch)));}
+function syncType(){document.querySelectorAll('.chip.type').forEach(x=>{
+  if(x.dataset.t==='all')x.classList.toggle('on',state.types.size===0);
+  else x.classList.toggle('on',state.types.has(x.dataset.t));});}
 document.querySelectorAll('.chip.type').forEach(c=>c.addEventListener('click',()=>{
-  document.querySelectorAll('.chip.type').forEach(x=>x.classList.remove('on'));c.classList.add('on');state.type=c.dataset.t;state.page=1;render();}));
+  if(c.dataset.t==='all'){state.types.clear();}
+  else{const t=c.dataset.t;if(state.types.has(t))state.types.delete(t);else state.types.add(t);}
+  state.page=1;render();syncType();}));
 document.getElementById('starChip').addEventListener('click',function(){state.star=!state.star;this.classList.toggle('on',state.star);state.page=1;render();});
 document.getElementById('warnChip').addEventListener('click',function(){state.warn=!state.warn;this.classList.toggle('on',state.warn);state.page=1;render();});
 document.querySelectorAll('.chip.tagm').forEach(c=>c.addEventListener('click',()=>{document.querySelectorAll('.chip.tagm').forEach(x=>x.classList.remove('on'));c.classList.add('on');state.tagMode=c.dataset.tm;state.page=1;render();}));
@@ -264,7 +269,7 @@ document.getElementById('search').addEventListener('input',e=>{state.q=e.target.
 
 function filtered(){return DATA.filter(d=>{
   if(state.chapters.size&&!state.chapters.has(d.ch))return false;
-  if(state.type!=='all'&&d.t!==state.type)return false;
+  if(state.types.size&&!state.types.has(d.t))return false;
   if(state.star&&!d.st)return false;
   if(state.warn&&d.ag!==false)return false;
   if(state.tagMode==='exclude'&&d.tag)return false;
