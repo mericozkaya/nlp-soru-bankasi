@@ -60,6 +60,10 @@ header.top{position:sticky;top:0;z-index:30;background:var(--bg);border-bottom:1
 .opt.wrong{border-color:var(--warn);background:var(--warnbg)} .opt.wrong .ol{color:var(--warn)}
 .opt:disabled{cursor:default}
 .opt .mark{margin-left:auto;font-weight:800}
+.fillrow{display:flex;gap:8px;margin:2px 0 6px}
+.fillrow .fillin{flex:1}
+.fbtn{padding:0 16px;border-radius:10px;border:1px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;font-weight:700;font-size:.9rem;font-family:inherit;white-space:nowrap}
+.fbtn:hover{border-color:var(--accent);color:var(--accent)}
 .tfq{display:flex;gap:9px;margin:2px 0 8px}
 .tfbtn{padding:9px 22px;border-radius:10px;border:1px solid var(--border);background:var(--panel2);color:var(--text);cursor:pointer;font-weight:700;font-size:.92rem;font-family:inherit;transition:all .12s}
 .tfbtn:hover:not(:disabled){border-color:var(--accent)}
@@ -272,10 +276,15 @@ function pickTF(btn){const box=btn.closest('.tfq');if(box.dataset.done)return;bo
   if(chosen===correct){res.textContent='✓ Doğru!';res.className='qresult show ok';}
   else{btn.classList.add('wrong');res.textContent='✗ Yanlış — doğru cevap: '+correct;res.className='qresult show no';}}
 function toggleAns(btn){const a=btn.nextElementSibling;a.classList.toggle('show');btn.textContent=a.classList.contains('show')?'Cevabı & Gerekçeyi Gizle':'Cevabı & Gerekçeyi Göster ▼';}
+function checkFill(el){const box=el.closest('.fillbox');const inp=box.querySelector('.fillin');const res=box.querySelector('.qresult');const correct=box.dataset.correct;
+  if(!inp.value.trim()){res.textContent='Önce bir cevap yaz.';res.className='qresult show no';return;}
+  if(fillOK(inp.value,correct)){res.textContent='✓ Doğru! Cevap: '+correct;res.className='qresult show ok';}
+  else{res.textContent='✗ Tam tutmadı. Doğru cevap: '+correct;res.className='qresult show no';}}
 
 function card(d){const div=d.ag===false;let body='';
   if(d.t==='mc'&&d.o){body+=`<div class="opts" data-correct="${d.oa}">`+['A','B','C','D','E'].filter(k=>d.o[k]).map(k=>`<button class="opt" data-l="${k}" onclick="pickMC(this)"><span class="ol">${k}</span><span>${esc(d.o[k])}</span><span class="mark"></span></button>`).join('')+`</div><div class="qresult"></div>`;}
   else if(d.t==='tf'){body+=`<div class="tfq" data-correct="${d.oa}"><button class="tfbtn" data-v="DOĞRU" onclick="pickTF(this)">DOĞRU</button><button class="tfbtn" data-v="YANLIŞ" onclick="pickTF(this)">YANLIŞ</button></div><div class="qresult"></div>`;}
+  else if(d.t==='fill'){body+=`<div class="fillbox" data-correct="${esc(d.oa)}"><div class="fillrow"><input class="fillin" placeholder="Cevabını yaz…" autocomplete="off" onkeydown="if(event.key==='Enter')checkFill(this)"><button class="fbtn" onclick="checkFill(this)">Kontrol Et</button></div><div class="qresult"></div></div>`;}
   let gemBlock,opusBlock;
   if(d.t==='short'){gemBlock=`<div class="av">Örnek yanıt</div><div class="ar">${esc(d.gm)}</div>`;opusBlock=`<div class="av">Anahtar noktalar</div><div class="ar">${esc(d.orr)}</div>`;}
   else if(d.t==='mc'){gemBlock=`<div class="av">${esc(d.gc)}) ${esc(d.o[d.gc]||'')}</div>`;opusBlock=`<div class="av">${esc(d.oa)}) ${esc(d.o[d.oa]||'')}</div><div class="ar">${esc(d.orr)}</div>`;}
